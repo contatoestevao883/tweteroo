@@ -10,22 +10,30 @@ const userData = []
 
 const tweetFormat = []
 
+let user = undefined
+
 app.post("/sign-up", (req, res) => {
 	const { username, avatar } = req.body
 
 	const newUser = { username, avatar }
+
+	user = username
 
 	userData.push(newUser)
 
     res.send("OK")
 })
 
-app.post("/tweet", (req, res) => {
-	const { username, tweet } = req.body
+app.post("/tweets", (req, res) => {
+	const { tweet } = req.body
+	
+	if(user === undefined){
+		return res.status(401).send("UNAUTHORIZED")
+	}
 
-	const profilePicture = userData.find(data => data.username === username)
+	const userInfoAndPfp = userData.find(data => data.username === user)
 
-	const newTweet = { username, avatar: profilePicture.avatar, tweet }
+	const newTweet = { username: userInfoAndPfp.username, avatar: userInfoAndPfp.avatar, tweet }
 
 	tweetFormat.push(newTweet)
 
@@ -33,6 +41,9 @@ app.post("/tweet", (req, res) => {
 })
 
 app.get("/tweets", (req, res) => {
+	if(tweetFormat.length === 0){
+		return res.send([])
+	}
 	const n = 10
 	let newArr = []
 	newArr = tweetFormat.slice(-n)
